@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGMI Arena - Admin Command Center</title>
+  
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Firebase CDNs (Using v8 for clean inline Javascript operations) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  
+  <!-- Firebase Config load -->
+  <script src="firebase-config.js"></script>
+</head>
+<body>
+
+  <!-- Sticky Navbar -->
+  <header>
+    <div class="container nav-container">
+      <a href="index.html" class="logo-wrapper">
+        <span class="logo-icon">🎮</span>
+        <span class="brand-text">BGMI <span>ARENA</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">Main Portal</a>
+        <a href="admin.html" class="nav-link active">Admin panel</a>
+        <button class="btn btn-whatsapp" id="logout-admin-btn" style="display: none; padding: 0.4rem 0.8rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2);">Exit access</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container" style="padding-top: 3rem; padding-bottom: 5rem;">
+
+    <!-- 1. Secure Admin login gating -->
+    <section id="auth-gate-section" class="animated">
+      <div style="max-width: 420px; margin: 0 auto; background: var(--bg-secondary); border: 1px solid rgba(255,255,255,0.08); padding: 2.5rem; border-radius: 1.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <span style="font-size: 2.5rem;">🔑</span>
+          <h2 style="font-size: 1.5rem; margin-top: 0.5rem; letter-spacing: -0.01em;">ADMIN COMMAND GATEWAY</h2>
+          <p style="font-size: 0.75rem; color: var(--text-gray); margin-top: 0.25rem;">Authenticate to load system records</p>
+        </div>
+
+        <form id="admin-login-form" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="form-group">
+            <label>Admin Gateway Email</label>
+            <input type="email" id="auth-email" required placeholder="admin@bgmi.com">
+          </div>
+          <div class="form-group">
+            <label>Master Password</label>
+            <input type="password" id="auth-pass" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary" id="auth-btn" style="width: 100%; justify-content: center; padding: 0.85rem;">Authenticate access</button>
+        </form>
+        
+        <p style="font-size:0.7rem; color: var(--text-gray); text-align:center; margin-top:1.5rem; line-height: 1.4;">
+          🧪 Default testing keys: <b style="color:var(--text-white);">admin@bgmi.com</b> & <b style="color:var(--text-white);">admin123</b>. You can also sign up standard accounts using the login panel on standard applet interface.
+        </p>
+      </div>
+    </section>
+
+    <!-- 2. Admin dashboard section (Visible upon success auth) -->
+    <section id="admin-dashboard-section" style="display: none;" class="animated">
+      
+      <!-- Welcome Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 class="section-head-title">Tournament Management HQ</h2>
+          <p style="font-size: 0.825rem; color: var(--text-gray);">Deploy battles, manage slot occupancy, and examine registered clans.</p>
+        </div>
+        <button class="btn btn-primary" id="open-builder-btn">➕ Deploy Custom Battle</button>
+      </div>
+
+      <!-- Add/Edit Modal Spec Form -->
+      <div id="tournament-builder-box" class="admin-card" style="display: none; transition: all 0.3s;">
+        <h3 id="builder-action-title" style="font-size: 1.1rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem; color: var(--accent-gold);">Deploy New Custom Battle room</h3>
+        
+        <form id="tournament-spec-form" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
+          <input type="hidden" id="edit-t-id">
+          
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Battle room title *</label>
+            <input type="text" id="t-title" required placeholder="e.g. SQUAD UNDERDOG CUP - ₹15,000">
+          </div>
+
+          <div class="form-group">
+            <label>Match Type Size *</label>
+            <select id="t-type">
+              <option value="Squad">Squad Battle (4v4/Classic)</option>
+              <option value="Duo">Duo Match (2v2)</option>
+              <option value="Solo">Solo Duel (1v1)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Map Location *</label>
+            <select id="t-map">
+              <option value="Erangel">Erangel (Classic)</option>
+              <option value="Miramar">Miramar (Desert)</option>
+              <option value="Sanhok">Sanhok (Jungle)</option>
+              <option value="Vikendi">Vikendi (Snow)</option>
+              <option value="Livik">Livik (Mini)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Total prize pool (₹) *</label>
+            <input type="number" id="t-prize" required value="5000" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>Entry fee (₹) *</label>
+            <input type="number" id="t-entry" required value="0" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>Scheduled Match date & time *</label>
+            <input type="datetime-local" id="t-datetime" required>
+          </div>
+
+          <div class="form-group">
+            <label>Max Lobby Slots *</label>
+            <input type="number" id="t-slots" required value="100" min="1">
+          </div>
+
+          <div class="form-group">
+            <label>Lobby status *</label>
+            <select id="t-status">
+              <option value="Upcoming">Upcoming Match</option>
+              <option value="Live">Live Battle</option>
+              <option value="Closed">Registration Closed</option>
+              <option value="Completed">Lobby Completed</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>WhatsApp group Invitation link</label>
+            <input type="url" id="t-whatsapp" placeholder="https://chat.whatsapp.com/...">
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Rules & Guidelines (One per line)</label>
+            <textarea id="t-rules" rows="3" placeholder="No cheats/hacks permisible&#10;Mobile only screen play&#10;Manual screenshot is mandatory"></textarea>
+          </div>
+
+          <div style="grid-column: 1 / -1; display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+            <button type="button" class="btn" id="hide-builder-btn" style="background: rgba(0,0,0,0.5); color: #fff;">Discard Specs</button>
+            <button type="submit" class="btn btn-primary" id="save-t-btn">Deploy Match specs</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tournaments Table overview -->
+      <div class="admin-card">
+        <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem;">Active Battle Listings</h3>
+        
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;" id="admin-tournaments-table">
+            <thead>
+              <tr style="background:rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--accent-gold);">
+                <th style="padding: 1rem; text-transform: uppercase;">Title / Type</th>
+                <th style="padding: 1rem; text-transform: uppercase;">Map</th>
+                <th style="padding: 1rem; text-transform: uppercase;">Prize Pool</th>
+                <th style="padding: 1rem; text-transform: uppercase;">Entry Fee</th>
+                <th style="padding: 1rem; text-transform: uppercase;">Slots Occupancy</th>
+                <th style="padding: 1rem; text-transform: uppercase;">Status</th>
+                <th style="padding: 1rem; text-transform: uppercase; text-align: right;">Command actions</th>
+              </tr>
+            </thead>
+            <tbody id="tournaments-tbody" style="color: #cbd5e1;">
+              <!-- Javascript population -->
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem;">Loading lobbies from database...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Player Registration audit section -->
+      <div class="admin-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+          <h3 style="font-size: 1.1rem;">Registered players Audit trail</h3>
+          <div>
+            <select id="player-selector-dropdown" style="background: var(--bg-primary); color:#fff; border: 1px solid rgba(255,255,255,0.15); padding: 0.4rem; border-radius: 0.5rem; font-size: 0.8rem; width: 220px;">
+              <option value="">Choose tournament match...</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;" id="admin-registrations-table">
+            <thead>
+              <tr style="background:rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--accent-gold);">
+                <th style="padding: 1rem; text-transform: uppercase;">Leader Ingame identifier (IGN)</th>
+                <th style="padding: 1rem; text-transform: uppercase;">Character ID</th>
+                <th style="padding: 1rem; text-transform: uppercase;">WhatsApp mobile</th>
+                <th style="padding: 1rem; text-transform: uppercase;">Email</th>
+                <th style="padding: 1rem; text-transform: uppercase;">Team specs</th>
+                <th style="padding: 1rem; text-transform: uppercase; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="registrations-tbody" style="color:#cbd5e1;">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-gray);">Select a tournament above to load active participant clans</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Script load -->
+  <script src="admin.js"></script>
+</body>
+</html>

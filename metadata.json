@@ -1,0 +1,6 @@
+{
+  "name": "BGMI Tournament Arena",
+  "description": "A professional dark-themed tournament booking and bracket management hub for BGMI (Battlegrounds Mobile India) players, featuring real-time slot counters, WhatsApp/Telegram integration, and a secure admin control panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
